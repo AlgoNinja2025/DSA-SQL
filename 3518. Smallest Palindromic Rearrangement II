@@ -1,0 +1,83 @@
+class Solution {
+public:
+    static const int LIMIT = 1000000;
+
+    // Calculates combinations nCr up to LIMIT to prevent overflow
+    long long comb(int n, int r) {
+        if (r < 0 || r > n) {
+            return 0;
+        }
+        r = min(r, n - r);
+        long long res = 1;
+        for (int i = 1; i <= r; i++) {
+            res = res * (n - r + i) / i;
+            if (res >= LIMIT) {
+                return LIMIT;
+            }
+        }
+        return res;
+    }
+
+    // Calculates total unique permutations possible for current frequency array
+    long long countways(vector<int>& cnt) {
+        int left = accumulate(cnt.begin(), cnt.end(), 0);
+        long long ways = 1;
+        for (int x : cnt) {
+            if (!x) continue;
+            ways *= comb(left, x);
+            if (ways >= LIMIT) {
+                return LIMIT;
+            }
+            left -= x;
+        }
+        return ways;
+    }
+
+    string smallestPalindrome(string s, int k) {
+        vector<int> freq(26, 0), half(26, 0);
+        char mid = 0;
+
+        for (char c : s) {
+            freq[c - 'a']++;
+        }
+
+        for (int i = 0; i < 26; i++) {
+            half[i] = freq[i] / 2;
+            if (freq[i] & 1) {
+                mid = 'a' + i;
+            }
+        }
+
+        // If total possible palindromes are less than k, return empty string
+        if (countways(half) < k) {
+            return "";
+        }
+
+        string first = "";
+        int len = s.size() / 2;
+
+        // Construct the first half digit-by-digit lexicographically
+        while ((int)first.size() < len) {
+            for (int c = 0; c < 26; c++) {
+                if (!half[c]) continue; // Skip if character isn't available
+
+                half[c]--;
+                long long ways = countways(half);
+
+                if (ways >= k) {
+                    first += char('a' + c);
+                    break; // Pick this character and proceed to next position
+                }
+
+                k -= ways; // Skip these permutations
+                half[c]++; // Backtrack
+            }
+        }
+
+        string second = first;
+        reverse(second.begin(), second.end());
+
+        return first + (mid ? string(1, mid) : "") + second;
+
+    }
+};
