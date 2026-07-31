@@ -1,0 +1,28 @@
+import java.util.Arrays;
+
+class Solution {
+    public int minimumPushes(String word) {
+        int[] freq = new int[26];
+
+        // 1. Count character frequencies
+        for (char ch : word.toCharArray()) {
+            freq[ch - 'a']++;
+        }
+
+        // 2. Sort frequencies in ascending order
+        Arrays.sort(freq);
+
+        int ans = 0;
+        int idx = 0;
+
+        // 3. Process frequencies from highest to lowest
+        for (int i = 25; i >= 0; i--) {
+            if (freq[i] == 0) break; // Optimization: stop early if remaining freqs are 0
+
+            ans += freq[i] * ((idx / 8) + 1);
+            idx++;
+        }
+        
+        return ans;
+    }
+}
